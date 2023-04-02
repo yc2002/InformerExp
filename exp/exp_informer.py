@@ -194,7 +194,7 @@ class Exp_Informer(Exp_Basic):
         file_size = os.path.getsize(best_model_path)
         print(f"Model file size: {file_size / (1024 * 1024):.2f} MB")
         
-        return self.model,train_time
+        return train_time
 
     def test(self, setting):
         test_data, test_loader = self._get_data(flag='test')
