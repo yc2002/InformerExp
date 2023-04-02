@@ -141,7 +141,8 @@ class Exp_Informer(Exp_Basic):
 
         if self.args.use_amp:
             scaler = torch.cuda.amp.GradScaler()
-
+        
+        train_start = time.time()
         for epoch in range(self.args.train_epochs):
             iter_count = 0
             train_loss = []
@@ -172,7 +173,7 @@ class Exp_Informer(Exp_Basic):
                 else:
                     loss.backward()
                     model_optim.step()
-
+                    
             print("Epoch: {} cost time: {}".format(epoch+1, time.time()-epoch_time))
             train_loss = np.average(train_loss)
             vali_loss = self.vali(vali_data, vali_loader, criterion)
@@ -187,8 +188,11 @@ class Exp_Informer(Exp_Basic):
 
             adjust_learning_rate(model_optim, epoch+1, self.args)
             
+        train_time = time.time()-train_start
         best_model_path = path+'/'+'checkpoint.pth'
         self.model.load_state_dict(torch.load(best_model_path))
+        file_size = os.path.getsize(best_model_path)
+        print(f"Model file size: {file_size / (1024 * 1024):.2f} MB")
         
         return self.model
 
@@ -200,11 +204,15 @@ class Exp_Informer(Exp_Basic):
         preds = []
         trues = []
         
+        start_time = time.time()
         for i, (batch_x,batch_y,batch_x_mark,batch_y_mark) in enumerate(test_loader):
             pred, true = self._process_one_batch(
                 test_data, batch_x, batch_y, batch_x_mark, batch_y_mark)
             preds.append(pred.detach().cpu().numpy())
             trues.append(true.detach().cpu().numpy())
+        inference_time = time.time()-start_time
+        
+        print("Inference time: ", inference_time)
 
         preds = np.array(preds)
         trues = np.array(trues)
@@ -225,7 +233,7 @@ class Exp_Informer(Exp_Basic):
         np.save(folder_path+'pred.npy', preds)
         np.save(folder_path+'true.npy', trues)
 
-        return
+        return mse,mae,inference_time
 
     def predict(self, setting, load=False):
         pred_data, pred_loader = self._get_data(flag='pred')
@@ -239,10 +247,12 @@ class Exp_Informer(Exp_Basic):
         
         preds = []
         
+        
         for i, (batch_x,batch_y,batch_x_mark,batch_y_mark) in enumerate(pred_loader):
             pred, true = self._process_one_batch(
                 pred_data, batch_x, batch_y, batch_x_mark, batch_y_mark)
             preds.append(pred.detach().cpu().numpy())
+        
 
         preds = np.array(preds)
         preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
