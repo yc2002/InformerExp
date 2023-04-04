@@ -8,7 +8,7 @@ from torch.utils.data import Dataset, DataLoader
 
 from utils.tools import StandardScaler
 from utils.timefeatures import time_features
-from sklearn.preprocessing import MinMaxScaler
+from utils.tools import MinMaxScaler
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -283,10 +283,7 @@ class Dataset_Custom(Dataset):
         return len(self.data_x) - self.seq_len- self.pred_len + 1
 
     def inverse_transform(self, data):
-        data_cpu = data.cpu()
-        data_np = data_cpu.detach().numpy()
-        #return self.scaler.inverse_transform(data)
-        return self.scaler.inverse_transform(data_np)
+        return self.scaler.inverse_transform(data)
 
 class Dataset_Pred(Dataset):
     def __init__(self, root_path, flag='pred', size=None, 
