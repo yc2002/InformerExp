@@ -284,6 +284,7 @@ class Dataset_Custom(Dataset):
 
     def inverse_transform(self, data):
         data_np = data.detach().numpy()
+        #return self.scaler.inverse_transform(data)
         return self.scaler.inverse_transform(data_np)
 
 class Dataset_Pred(Dataset):
