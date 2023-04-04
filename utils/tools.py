@@ -74,3 +74,28 @@ class StandardScaler():
             mean = mean[-1:]
             std = std[-1:]
         return (data * std) + mean
+    
+class MinMaxScaler():
+    def __init__(self, feature_range=(0, 1)):
+        self.feature_range = feature_range
+        self.data_min = 0.
+        self.data_max = 1.
+    
+    def fit(self, data):
+        self.data_min = data.min(0)
+        self.data_max = data.max(0)
+
+    def transform(self, data):
+        data_range = self.data_max - self.data_min
+        data_min = torch.from_numpy(self.data_min).type_as(data).to(data.device) if torch.is_tensor(data) else self.data_min
+        data_range = torch.from_numpy(data_range).type_as(data).to(data.device) if torch.is_tensor(data) else data_range
+        return (data - data_min) / data_range
+
+    def inverse_transform(self, data):
+        data_range = self.data_max - self.data_min
+        data_min = torch.from_numpy(self.data_min).type_as(data).to(data.device) if torch.is_tensor(data) else self.data_min
+        data_range = torch.from_numpy(data_range).type_as(data).to(data.device) if torch.is_tensor(data) else data_range
+        if data.shape[-1] != data_min.shape[-1]:
+            data_min = data_min[-1:]
+            data_range = data_range[-1:]
+        return (data * data_range) + data_min
