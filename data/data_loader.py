@@ -283,7 +283,8 @@ class Dataset_Custom(Dataset):
         return len(self.data_x) - self.seq_len- self.pred_len + 1
 
     def inverse_transform(self, data):
-        data_np = data.detach().numpy()
+        data_cpu = data.cpu()
+        data_np = data_cpu.detach().numpy()
         #return self.scaler.inverse_transform(data)
         return self.scaler.inverse_transform(data_np)
 
