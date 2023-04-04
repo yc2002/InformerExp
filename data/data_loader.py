@@ -283,7 +283,8 @@ class Dataset_Custom(Dataset):
         return len(self.data_x) - self.seq_len- self.pred_len + 1
 
     def inverse_transform(self, data):
-        return self.scaler.inverse_transform(data)
+        data_np = data.detach().numpy()
+        return self.scaler.inverse_transform(data_np)
 
 class Dataset_Pred(Dataset):
     def __init__(self, root_path, flag='pred', size=None, 
